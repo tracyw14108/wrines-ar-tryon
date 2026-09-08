@@ -3,6 +3,10 @@ import './style.css';
 
 const MODEL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
 const PRODUCT_BASE = `${import.meta.env.BASE_URL}products/`;
+const WASM_SOURCES = [
+  'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm',
+  'https://unpkg.com/@mediapipe/tasks-vision/wasm',
+];
 
 const video = document.querySelector('#camera');
 const canvas = document.querySelector('#overlay');
@@ -15,6 +19,7 @@ const offsetYRange = document.querySelector('#offsetYRange');
 const sideButtons = [...document.querySelectorAll('[data-side]')];
 
 let landmarker = null;
+let visionFileset = null;
 let stream = null;
 let running = false;
 let lastVideoTime = -1;
@@ -32,10 +37,36 @@ sideButtons.forEach((button) => {
 
 startBtn.onclick = async () => running ? stopCamera() : await start();
 
+function describeError(error) {
+  if (!error) return 'Unknown error';
+  if (typeof error === 'string') return error;
+  if (error instanceof Event) {
+    const target = error.target;
+    return `Event:${error.type}${target?.src ? ` | ${target.src}` : ''}`;
+  }
+  return [error.name, error.message].filter(Boolean).join(' | ') || String(error);
+}
+
+async function loadVisionFileset() {
+  if (visionFileset) return visionFileset;
+
+  let lastError = null;
+  for (const source of WASM_SOURCES) {
+    try {
+      statusEl.textContent = '載入辨識引擎';
+      visionFileset = await FilesetResolver.forVisionTasks(source);
+      return visionFileset;
+    } catch (error) {
+      lastError = error;
+      console.warn(`MediaPipe WASM source failed: ${source}`, error);
+    }
+  }
+
+  throw new Error(`MEDIAPIPE_WASM_LOAD_FAILED | ${describeError(lastError)}`);
+}
+
 async function createLandmarker(delegate) {
-  const vision = await FilesetResolver.forVisionTasks(
-    'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm'
-  );
+  const vision = await loadVisionFileset();
 
   return FaceLandmarker.createFromOptions(vision, {
     baseOptions: {
@@ -65,13 +96,8 @@ async function initLandmarker() {
 }
 
 async function openCamera() {
-  if (!window.isSecureContext) {
-    throw new Error('INSECURE_CONTEXT');
-  }
-
-  if (!navigator.mediaDevices?.getUserMedia) {
-    throw new Error('GET_USER_MEDIA_UNAVAILABLE');
-  }
+  if (!window.isSecureContext) throw new Error('INSECURE_CONTEXT');
+  if (!navigator.mediaDevices?.getUserMedia) throw new Error('GET_USER_MEDIA_UNAVAILABLE');
 
   statusEl.textContent = '要求相機權限';
 
@@ -94,31 +120,14 @@ function cameraErrorMessage(error) {
   const name = error?.name || '';
   const message = error?.message || '';
 
-  if (message === 'INSECURE_CONTEXT') {
-    return '目前不是安全連線，請使用 HTTPS 網址開啟。';
-  }
+  if (message === 'INSECURE_CONTEXT') return '目前不是安全連線，請使用 HTTPS 網址開啟。';
+  if (message === 'GET_USER_MEDIA_UNAVAILABLE') return '目前瀏覽器沒有提供相機功能。請直接用 Safari App 開啟此頁。';
+  if (name === 'NotAllowedError' || name === 'SecurityError') return '相機權限被拒絕。請到 iPhone「設定 → Safari → 相機」，改成允許或詢問，再重新整理此頁。';
+  if (name === 'NotFoundError' || name === 'DevicesNotFoundError') return '找不到可用的相機。請確認相機沒有被系統限制。';
+  if (name === 'NotReadableError' || name === 'TrackStartError') return '相機目前無法被讀取，可能正被其他 App 使用。請關閉其他使用相機的 App 後再試。';
+  if (name === 'OverconstrainedError') return '目前裝置不支援指定的相機模式，請重新整理後再試。';
 
-  if (message === 'GET_USER_MEDIA_UNAVAILABLE') {
-    return '目前瀏覽器沒有提供相機功能。請直接用 Safari App 開啟此頁。';
-  }
-
-  if (name === 'NotAllowedError' || name === 'SecurityError') {
-    return '相機權限被拒絕。請到 iPhone「設定 → Safari → 相機」，改成允許或詢問，再重新整理此頁。';
-  }
-
-  if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
-    return '找不到可用的相機。請確認相機沒有被系統限制。';
-  }
-
-  if (name === 'NotReadableError' || name === 'TrackStartError') {
-    return '相機目前無法被讀取，可能正被其他 App 使用。請關閉其他使用相機的 App 後再試。';
-  }
-
-  if (name === 'OverconstrainedError') {
-    return '目前裝置不支援指定的相機模式，請重新整理後再試。';
-  }
-
-  return `相機錯誤：${name || 'UnknownError'}${message ? `｜${message}` : ''}`;
+  return `相機錯誤：${describeError(error)}`;
 }
 
 async function start() {
@@ -126,8 +135,6 @@ async function start() {
   startBtn.textContent = '啟動中…';
 
   try {
-    // iOS Safari 必須在使用者點擊後盡快要求相機權限，
-    // 因此先開相機，再載入 MediaPipe 模型。
     stream = await openCamera();
     video.srcObject = stream;
     await video.play();
@@ -142,7 +149,7 @@ async function start() {
     } catch (modelError) {
       console.error('Face Landmarker init failed', modelError);
       statusEl.textContent = '臉部模型載入失敗';
-      alert(`相機已成功開啟，但臉部辨識模型載入失敗。\n${modelError?.name || ''} ${modelError?.message || modelError}`);
+      alert(`相機已成功開啟，但臉部辨識模型載入失敗。\n${describeError(modelError)}`);
     }
 
     requestAnimationFrame(predict);
@@ -203,10 +210,8 @@ function distance(a, b) {
 
 function drawEarring(anchor, size, rotation, mirror) {
   if (!earring.complete || !earring.naturalWidth) return;
-
   const aspect = earring.naturalWidth / earring.naturalHeight || 0.55;
   const width = size * aspect;
-
   ctx.save();
   ctx.translate(anchor.x, anchor.y);
   ctx.rotate(rotation);
@@ -230,23 +235,11 @@ function render(landmarks) {
   const earringHeight = faceHeight * 0.24 * scale;
   const headRoll = Math.atan2(rightFace.y - leftFace.y, rightFace.x - leftFace.x);
 
-  const leftAnchor = {
-    x: leftFace.x - faceHeight * 0.018,
-    y: leftFace.y + faceHeight * 0.08 + offsetY,
-  };
+  const leftAnchor = { x: leftFace.x - faceHeight * 0.018, y: leftFace.y + faceHeight * 0.08 + offsetY };
+  const rightAnchor = { x: rightFace.x + faceHeight * 0.018, y: rightFace.y + faceHeight * 0.08 + offsetY };
 
-  const rightAnchor = {
-    x: rightFace.x + faceHeight * 0.018,
-    y: rightFace.y + faceHeight * 0.08 + offsetY,
-  };
-
-  if (selectedSide === 'left' || selectedSide === 'both') {
-    drawEarring(leftAnchor, earringHeight, headRoll, true);
-  }
-
-  if (selectedSide === 'right' || selectedSide === 'both') {
-    drawEarring(rightAnchor, earringHeight, headRoll, false);
-  }
+  if (selectedSide === 'left' || selectedSide === 'both') drawEarring(leftAnchor, earringHeight, headRoll, true);
+  if (selectedSide === 'right' || selectedSide === 'both') drawEarring(rightAnchor, earringHeight, headRoll, false);
 }
 
 function predict() {
@@ -255,11 +248,7 @@ function predict() {
   resize();
   clearOverlay();
 
-  if (
-    landmarker &&
-    video.readyState >= 2 &&
-    video.currentTime !== lastVideoTime
-  ) {
+  if (landmarker && video.readyState >= 2 && video.currentTime !== lastVideoTime) {
     lastVideoTime = video.currentTime;
 
     try {
