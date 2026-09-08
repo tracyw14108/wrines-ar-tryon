@@ -32,18 +32,15 @@ sideButtons.forEach((button) => {
 
 startBtn.onclick = async () => running ? stopCamera() : await start();
 
-async function init() {
-  if (landmarker) return;
-
-  statusEl.textContent = '載入臉部模型';
+async function createLandmarker(delegate) {
   const vision = await FilesetResolver.forVisionTasks(
     'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm'
   );
 
-  landmarker = await FaceLandmarker.createFromOptions(vision, {
+  return FaceLandmarker.createFromOptions(vision, {
     baseOptions: {
       modelAssetPath: MODEL,
-      delegate: 'GPU',
+      delegate,
     },
     runningMode: 'VIDEO',
     numFaces: 1,
@@ -53,66 +50,110 @@ async function init() {
   });
 }
 
-function cameraSupportError() {
+async function initLandmarker() {
+  if (landmarker) return;
+
+  statusEl.textContent = '載入臉部模型';
+
+  try {
+    landmarker = await createLandmarker('GPU');
+  } catch (gpuError) {
+    console.warn('GPU delegate failed, falling back to CPU', gpuError);
+    statusEl.textContent = '切換相容模式';
+    landmarker = await createLandmarker('CPU');
+  }
+}
+
+async function openCamera() {
   if (!window.isSecureContext) {
-    return '目前不是安全連線。請使用 HTTPS 網址開啟。';
+    throw new Error('INSECURE_CONTEXT');
   }
 
   if (!navigator.mediaDevices?.getUserMedia) {
-    return '目前這個內建瀏覽器不支援相機存取。請點右下角 Safari 圖示，改用 Safari 開啟後再試一次。';
+    throw new Error('GET_USER_MEDIA_UNAVAILABLE');
   }
 
-  return null;
-}
+  statusEl.textContent = '要求相機權限';
 
-function cameraErrorMessage(error) {
-  if (error?.name === 'NotAllowedError' || error?.name === 'PermissionDeniedError') {
-    return '相機權限尚未允許。請在 Safari 允許此網站使用相機後再試一次。';
-  }
-
-  if (error?.name === 'NotFoundError' || error?.name === 'DevicesNotFoundError') {
-    return '找不到可使用的相機。';
-  }
-
-  if (error?.name === 'NotReadableError' || error?.name === 'TrackStartError') {
-    return '相機目前被其他 App 或瀏覽器占用，請關閉後再試一次。';
-  }
-
-  return '無法開啟相機。若你是在 App 內建瀏覽器中，請改用 Safari 開啟。';
-}
-
-async function start() {
   try {
-    const supportError = cameraSupportError();
-    if (supportError) {
-      statusEl.textContent = '請改用 Safari';
-      alert(supportError);
-      return;
-    }
-
-    await init();
-    statusEl.textContent = '要求相機權限';
-
-    stream = await navigator.mediaDevices.getUserMedia({
+    return await navigator.mediaDevices.getUserMedia({
       video: {
-        facingMode: 'user',
+        facingMode: { ideal: 'user' },
         width: { ideal: 1280 },
         height: { ideal: 720 },
       },
       audio: false,
     });
+  } catch (firstError) {
+    console.warn('Preferred front camera constraints failed, retrying basic video', firstError);
+    return navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+  }
+}
 
+function cameraErrorMessage(error) {
+  const name = error?.name || '';
+  const message = error?.message || '';
+
+  if (message === 'INSECURE_CONTEXT') {
+    return '目前不是安全連線，請使用 HTTPS 網址開啟。';
+  }
+
+  if (message === 'GET_USER_MEDIA_UNAVAILABLE') {
+    return '目前瀏覽器沒有提供相機功能。請直接用 Safari App 開啟此頁。';
+  }
+
+  if (name === 'NotAllowedError' || name === 'SecurityError') {
+    return '相機權限被拒絕。請到 iPhone「設定 → Safari → 相機」，改成允許或詢問，再重新整理此頁。';
+  }
+
+  if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+    return '找不到可用的相機。請確認相機沒有被系統限制。';
+  }
+
+  if (name === 'NotReadableError' || name === 'TrackStartError') {
+    return '相機目前無法被讀取，可能正被其他 App 使用。請關閉其他使用相機的 App 後再試。';
+  }
+
+  if (name === 'OverconstrainedError') {
+    return '目前裝置不支援指定的相機模式，請重新整理後再試。';
+  }
+
+  return `相機錯誤：${name || 'UnknownError'}${message ? `｜${message}` : ''}`;
+}
+
+async function start() {
+  startBtn.disabled = true;
+  startBtn.textContent = '啟動中…';
+
+  try {
+    // iOS Safari 必須在使用者點擊後盡快要求相機權限，
+    // 因此先開相機，再載入 MediaPipe 模型。
+    stream = await openCamera();
     video.srcObject = stream;
     await video.play();
 
     running = true;
     startBtn.textContent = '關閉相機';
-    statusEl.textContent = '尋找臉部';
+    statusEl.textContent = '相機已開啟';
+
+    try {
+      await initLandmarker();
+      statusEl.textContent = '尋找臉部';
+    } catch (modelError) {
+      console.error('Face Landmarker init failed', modelError);
+      statusEl.textContent = '臉部模型載入失敗';
+      alert(`相機已成功開啟，但臉部辨識模型載入失敗。\n${modelError?.name || ''} ${modelError?.message || modelError}`);
+    }
+
     requestAnimationFrame(predict);
   } catch (error) {
-    console.error(error);
+    console.error('Camera startup failed', error);
+    stopCamera();
     statusEl.textContent = '無法開啟相機';
     alert(cameraErrorMessage(error));
+  } finally {
+    startBtn.disabled = false;
+    if (!running) startBtn.textContent = '開啟相機';
   }
 }
 
@@ -124,7 +165,7 @@ function stopCamera() {
   clearOverlay();
   guide.classList.remove('hidden');
   startBtn.textContent = '開啟相機';
-  statusEl.textContent = '已關閉';
+  if (statusEl.textContent !== '無法開啟相機') statusEl.textContent = '已關閉';
 }
 
 function resize() {
@@ -220,15 +261,21 @@ function predict() {
     video.currentTime !== lastVideoTime
   ) {
     lastVideoTime = video.currentTime;
-    const result = landmarker.detectForVideo(video, performance.now());
 
-    if (result.faceLandmarks?.length) {
-      guide.classList.add('hidden');
-      statusEl.textContent = '已偵測臉部';
-      render(result.faceLandmarks[0]);
-    } else {
-      guide.classList.remove('hidden');
-      statusEl.textContent = '尋找臉部';
+    try {
+      const result = landmarker.detectForVideo(video, performance.now());
+
+      if (result.faceLandmarks?.length) {
+        guide.classList.add('hidden');
+        statusEl.textContent = '已偵測臉部';
+        render(result.faceLandmarks[0]);
+      } else {
+        guide.classList.remove('hidden');
+        statusEl.textContent = '尋找臉部';
+      }
+    } catch (error) {
+      console.error('Face detection failed', error);
+      statusEl.textContent = '臉部辨識錯誤';
     }
   }
 
