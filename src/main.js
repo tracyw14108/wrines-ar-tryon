@@ -53,8 +53,43 @@ async function init() {
   });
 }
 
+function cameraSupportError() {
+  if (!window.isSecureContext) {
+    return '目前不是安全連線。請使用 HTTPS 網址開啟。';
+  }
+
+  if (!navigator.mediaDevices?.getUserMedia) {
+    return '目前這個內建瀏覽器不支援相機存取。請點右下角 Safari 圖示，改用 Safari 開啟後再試一次。';
+  }
+
+  return null;
+}
+
+function cameraErrorMessage(error) {
+  if (error?.name === 'NotAllowedError' || error?.name === 'PermissionDeniedError') {
+    return '相機權限尚未允許。請在 Safari 允許此網站使用相機後再試一次。';
+  }
+
+  if (error?.name === 'NotFoundError' || error?.name === 'DevicesNotFoundError') {
+    return '找不到可使用的相機。';
+  }
+
+  if (error?.name === 'NotReadableError' || error?.name === 'TrackStartError') {
+    return '相機目前被其他 App 或瀏覽器占用，請關閉後再試一次。';
+  }
+
+  return '無法開啟相機。若你是在 App 內建瀏覽器中，請改用 Safari 開啟。';
+}
+
 async function start() {
   try {
+    const supportError = cameraSupportError();
+    if (supportError) {
+      statusEl.textContent = '請改用 Safari';
+      alert(supportError);
+      return;
+    }
+
     await init();
     statusEl.textContent = '要求相機權限';
 
@@ -77,7 +112,7 @@ async function start() {
   } catch (error) {
     console.error(error);
     statusEl.textContent = '無法開啟相機';
-    alert('請允許相機權限，並使用 localhost 或 HTTPS 開啟。');
+    alert(cameraErrorMessage(error));
   }
 }
 
