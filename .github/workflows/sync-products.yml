@@ -41,5 +41,6 @@ jobs:
             echo "No product asset changes."
           else
             git commit -m "Sync Anpin AR product assets"
-            git push
+            git pull --rebase origin main
+            git push origin main
           fi
