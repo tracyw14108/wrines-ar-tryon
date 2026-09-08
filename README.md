@@ -1,11 +1,15 @@
-# W.RINES AR Try-On — Ear v1
+# W.RINES AR Try-On — Ear v2
 
-第一版已包含：
+目前已包含：
 - 手機／電腦瀏覽器開啟前鏡頭
 - MediaPipe Face Landmarker 單臉偵測
-- 一款示範耳環跟著左右臉側移動
+- 多 SKU 正式安蘋耳環切換
 - 左耳／右耳／雙耳切換
 - 耳環大小與垂直位置微調
+- 耳垂近似定位與左右轉頭補償
+- 截圖／分享試戴畫面
+- 商品實際尺寸欄位 `width_mm / height_mm`
+- AR 商品 PNG 採 `rembg + OpenCV` 去背流程，只保留主要飾品主體，移除背景、陰影與旁邊雜物
 
 ## 執行
 
@@ -20,16 +24,35 @@ npm run dev
 http://localhost:5173
 ```
 
-手機正式測試請部署到 HTTPS 網址。
-
-## 換成正式耳環
-
-目前示範圖：
+正式測試網址：
 
 ```text
-public/products/demo-earring.svg
+https://tracyw14108.github.io/wrines-ar-tryon/
 ```
 
-正式版可改用透明背景 PNG，並修改 `src/main.js` 的 `earring.src`。
+## 商品資料
 
-下一階段：耳垂位置精準校準、1:1 真實尺寸、頭部左右轉透視縮放、遮擋、商品選擇器、截圖。
+商品圖與 catalog：
+
+```text
+public/products/
+public/products/products.json
+```
+
+來源資料：
+
+```text
+data/anpin-ar-products.json
+```
+
+同步腳本：
+
+```text
+scripts/build_products.py
+```
+
+同步流程會重新下載商品來源圖，以 `rembg` 去除背景，再以 OpenCV 連通區塊分析保留單一主要飾品主體，最後輸出透明 PNG。
+
+## 尺寸
+
+有可靠尺寸資料的 SKU 使用 `width_mm / height_mm` 進行接近實際比例的顯示；尺寸尚未核實的商品會標記 `NEEDS_PHYSICAL_SIZE`，不宣稱精準 1:1。
