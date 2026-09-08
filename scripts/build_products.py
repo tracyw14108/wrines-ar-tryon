@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import io
 import json
-from collections import deque
 from pathlib import Path
 
+import cv2
+import numpy as np
 import requests
 from PIL import Image
+from rembg import remove
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'data' / 'anpin-ar-products.json'
@@ -20,18 +22,77 @@ session.headers.update({
 })
 
 
-def corner_background(img: Image.Image):
-    rgba = img.convert('RGBA')
-    w, h = rgba.size
-    pts = [
-        rgba.getpixel((0, 0)), rgba.getpixel((w - 1, 0)),
-        rgba.getpixel((0, h - 1)), rgba.getpixel((w - 1, h - 1)),
-    ]
-    return tuple(sum(p[i] for p in pts) // len(pts) for i in range(3))
+def extract_main_component(mask: np.ndarray) -> np.ndarray:
+    num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask, connectivity=8)
+    if num_labels <= 1:
+        return mask
+
+    h, w = mask.shape
+    img_cx, img_cy = w / 2.0, h / 2.0
+    img_diag = (w ** 2 + h ** 2) ** 0.5
+    min_area = max(120, int(h * w * 0.0015))
+
+    best_label = None
+    best_score = -1.0
+
+    for label in range(1, num_labels):
+        x = stats[label, cv2.CC_STAT_LEFT]
+        y = stats[label, cv2.CC_STAT_TOP]
+        bw = stats[label, cv2.CC_STAT_WIDTH]
+        bh = stats[label, cv2.CC_STAT_HEIGHT]
+        area = stats[label, cv2.CC_STAT_AREA]
+        if area < min_area:
+            continue
+
+        cx, cy = centroids[label]
+        center_dist = ((cx - img_cx) ** 2 + (cy - img_cy) ** 2) ** 0.5
+        center_score = 1.0 - min(center_dist / (img_diag / 2.0), 1.0)
+        fill_ratio = area / max(1, bw * bh)
+        touches_edge = (
+            x <= 2 or y <= 2 or
+            (x + bw) >= (w - 2) or
+            (y + bh) >= (h - 2)
+        )
+
+        score = area * (0.7 + 0.5 * center_score) * (0.7 + 0.6 * fill_ratio)
+        if touches_edge:
+            score *= 0.6
+
+        if score > best_score:
+            best_score = score
+            best_label = label
+
+    if best_label is None:
+        best_label = 1 + np.argmax(stats[1:, cv2.CC_STAT_AREA])
+
+    out = np.zeros_like(mask)
+    out[labels == best_label] = 255
+    return out
 
 
-def remove_border_background(raw: bytes, output: Path):
-    img = Image.open(io.BytesIO(raw)).convert('RGBA')
+def crop_to_alpha(img: Image.Image, pad_ratio_x=0.08, pad_ratio_y=0.08) -> Image.Image:
+    bbox = img.getchannel('A').getbbox()
+    if not bbox:
+        return img
+
+    l, t, r, b = bbox
+    w = r - l
+    h = b - t
+    pad_x = max(8, int(w * pad_ratio_x))
+    pad_y = max(8, int(h * pad_ratio_y))
+
+    return img.crop((
+        max(0, l - pad_x),
+        max(0, t - pad_y),
+        min(img.width, r + pad_x),
+        min(img.height, b + pad_y),
+    ))
+
+
+def subject_only_png(raw: bytes, output: Path):
+    cut_bytes = remove(raw)
+    img = Image.open(io.BytesIO(cut_bytes)).convert('RGBA')
+
     if max(img.size) > 1600:
         scale = 1600 / max(img.size)
         img = img.resize(
@@ -39,47 +100,19 @@ def remove_border_background(raw: bytes, output: Path):
             Image.Resampling.LANCZOS,
         )
 
-    bg = corner_background(img)
-    px = img.load()
-    w, h = img.size
+    rgba = np.array(img)
+    alpha = rgba[:, :, 3]
+    mask = np.where(alpha > 20, 255, 0).astype(np.uint8)
 
-    def similar(pixel, threshold=34):
-        return max(abs(pixel[i] - bg[i]) for i in range(3)) <= threshold
+    kernel3 = np.ones((3, 3), np.uint8)
+    kernel5 = np.ones((5, 5), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel3)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel5)
+    main_mask = extract_main_component(mask)
 
-    q = deque()
-    seen = bytearray(w * h)
-
-    def add(x, y):
-        idx = y * w + x
-        if seen[idx]:
-            return
-        seen[idx] = 1
-        if similar(px[x, y]):
-            q.append((x, y))
-
-    for x in range(w):
-        add(x, 0); add(x, h - 1)
-    for y in range(h):
-        add(0, y); add(w - 1, y)
-
-    while q:
-        x, y = q.popleft()
-        r, g, b, _ = px[x, y]
-        px[x, y] = (r, g, b, 0)
-        if x > 0: add(x - 1, y)
-        if x + 1 < w: add(x + 1, y)
-        if y > 0: add(x, y - 1)
-        if y + 1 < h: add(x, y + 1)
-
-    bbox = img.getchannel('A').getbbox()
-    if bbox:
-        l, t, r, b = bbox
-        pad_x = max(8, int((r - l) * 0.06))
-        pad_y = max(8, int((b - t) * 0.05))
-        img = img.crop((
-            max(0, l - pad_x), max(0, t - pad_y),
-            min(w, r + pad_x), min(h, b + pad_y),
-        ))
+    rgba[:, :, 3] = np.where(main_mask > 0, rgba[:, :, 3], 0)
+    img = Image.fromarray(rgba, 'RGBA')
+    img = crop_to_alpha(img)
 
     img.save(output, 'PNG', optimize=True)
     return img.size
@@ -96,13 +129,13 @@ def main():
             response = session.get(item['source_image_url'], timeout=60)
             response.raise_for_status()
             filename = f'{sku}.png'
-            size = remove_border_background(response.content, OUT_DIR / filename)
+            size = subject_only_png(response.content, OUT_DIR / filename)
             output_catalog.append({
                 **item,
                 'image': filename,
                 'image_px': {'width': size[0], 'height': size[1]},
-                'scale_correction': 1.0,
-                'anchor_type': 'earlobe',
+                'scale_correction': item.get('scale_correction', 1.0),
+                'anchor_type': item.get('anchor_type', 'earlobe'),
             })
             print(f'OK {sku}: {size[0]}x{size[1]}')
         except Exception as exc:
