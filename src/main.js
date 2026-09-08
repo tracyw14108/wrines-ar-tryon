@@ -1,0 +1,18 @@
+import {FaceLandmarker,FilesetResolver} from '@mediapipe/tasks-vision';import './style.css';
+const MODEL='https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
+const video=document.querySelector('#camera'),canvas=document.querySelector('#overlay'),ctx=canvas.getContext('2d'),startBtn=document.querySelector('#startBtn'),statusEl=document.querySelector('#status'),guide=document.querySelector('#guide'),scaleRange=document.querySelector('#scaleRange'),offsetYRange=document.querySelector('#offsetYRange'),sideButtons=[...document.querySelectorAll('[data-side]')];
+let landmarker=null,stream=null,running=false,lastVideoTime=-1,selectedSide='both';
+const earring=new Image();earring.src='/products/demo-earring.svg';
+sideButtons.forEach(b=>b.onclick=()=>{selectedSide=b.dataset.side;sideButtons.forEach(x=>x.classList.toggle('active',x===b))});
+startBtn.onclick=async()=>running?stopCamera():await start();
+async function init(){if(landmarker)return;statusEl.textContent='載入臉部模型';const vision=await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm');landmarker=await FaceLandmarker.createFromOptions(vision,{baseOptions:{modelAssetPath:MODEL,delegate:'GPU'},runningMode:'VIDEO',numFaces:1,minFaceDetectionConfidence:.5,minFacePresenceConfidence:.5,minTrackingConfidence:.5})}
+async function start(){try{await init();stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});video.srcObject=stream;await video.play();running=true;startBtn.textContent='關閉相機';statusEl.textContent='尋找臉部';requestAnimationFrame(predict)}catch(e){console.error(e);statusEl.textContent='無法開啟相機';alert('請允許相機權限，並使用 localhost 或 HTTPS 開啟。')}}
+function stopCamera(){running=false;if(stream)stream.getTracks().forEach(t=>t.stop());video.srcObject=null;ctx.clearRect(0,0,canvas.width,canvas.height);guide.classList.remove('hidden');startBtn.textContent='開啟相機';statusEl.textContent='已關閉'}
+function resize(){const r=video.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);canvas.width=r.width*d;canvas.height=r.height*d;ctx.setTransform(d,0,0,d,0,0)}
+function cover(vw,vh,w,h){const s=Math.max(w/vw,h/vh);return{s,ox:(w-vw*s)/2,oy:(h-vh*s)/2}}
+function pt(l,t){return{x:t.ox+l.x*video.videoWidth*t.s,y:t.oy+l.y*video.videoHeight*t.s}}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function draw(anchor,size,rot,left){if(!earring.complete)return;const ar=earring.naturalWidth/earring.naturalHeight||.55,w=size*ar;ctx.save();ctx.translate(anchor.x,anchor.y);ctx.rotate(rot);if(left)ctx.scale(-1,1);ctx.drawImage(earring,-w/2,0,w,size);ctx.restore()}
+function render(lm){const r=video.getBoundingClientRect(),t=cover(video.videoWidth,video.videoHeight,r.width,r.height),L=pt(lm[234],t),R=pt(lm[454],t),F=pt(lm[10],t),C=pt(lm[152],t),fh=dist(F,C),scale=+scaleRange.value,oy=+offsetYRange.value*fh,h=fh*.24*scale,rot=Math.atan2(R.y-L.y,R.x-L.x),la={x:L.x-fh*.018,y:L.y+fh*.08+oy},ra={x:R.x+fh*.018,y:R.y+fh*.08+oy};if(selectedSide==='left'||selectedSide==='both')draw(la,h,rot,true);if(selectedSide==='right'||selectedSide==='both')draw(ra,h,rot,false)}
+function predict(){if(!running)return;resize();const r=video.getBoundingClientRect();ctx.clearRect(0,0,r.width,r.height);if(landmarker&&video.readyState>=2&&video.currentTime!==lastVideoTime){lastVideoTime=video.currentTime;const res=landmarker.detectForVideo(video,performance.now());if(res.faceLandmarks?.length){guide.classList.add('hidden');statusEl.textContent='已偵測臉部';render(res.faceLandmarks[0])}else{guide.classList.remove('hidden');statusEl.textContent='尋找臉部'}}requestAnimationFrame(predict)}
+addEventListener('resize',resize);
