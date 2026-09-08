@@ -56,3 +56,7 @@ scripts/build_products.py
 ## 尺寸
 
 有可靠尺寸資料的 SKU 使用 `width_mm / height_mm` 進行接近實際比例的顯示；尺寸尚未核實的商品會標記 `NEEDS_PHYSICAL_SIZE`，不宣稱精準 1:1。
+
+## Asset QA
+
+2026-09-09：7 款 AR 耳環已重新執行 subject-only 去背與商品圖同步，並重新部署 GitHub Pages。
