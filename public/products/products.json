@@ -1,0 +1,135 @@
+[
+  {
+    "sku": "YC4413E_1",
+    "name": "方形珍珠幾何耳環",
+    "charm": "POISE",
+    "material": "S999",
+    "source_image_url": "https://cdn.shopify.com/s/files/1/0473/1256/8485/files/O1CN018ZfGZ31KUzjsplrXN__2904881168-0-cib.jpg?v=1776956817",
+    "product_url": "https://www.anpingbeauty.com/products/yc4413e_1",
+    "in_stock": "YES",
+    "width_mm": null,
+    "height_mm": null,
+    "dimension_status": "NEEDS_PHYSICAL_SIZE",
+    "image": "YC4413E_1.png",
+    "image_px": {
+      "width": 1000,
+      "height": 779
+    },
+    "scale_correction": 1.0,
+    "anchor_type": "earlobe"
+  },
+  {
+    "sku": "YC3536E_1",
+    "name": "蝴蝶結螺絲耳環",
+    "charm": "RESONANCE",
+    "material": "S999",
+    "source_image_url": "https://cdn.shopify.com/s/files/1/0473/1256/8485/files/O1CN01zjLR2O1KUzks0k6dW__2904881168-0-cib.jpg?v=1786649035",
+    "product_url": "https://www.anpingbeauty.com/products/yc3536e_1",
+    "in_stock": "YES",
+    "width_mm": null,
+    "height_mm": null,
+    "dimension_status": "NEEDS_PHYSICAL_SIZE",
+    "image": "YC3536E_1.png",
+    "image_px": {
+      "width": 1000,
+      "height": 1000
+    },
+    "scale_correction": 1.0,
+    "anchor_type": "earlobe"
+  },
+  {
+    "sku": "YC5295E_1",
+    "name": "線性流蘇耳釘",
+    "charm": "FLUX",
+    "material": "S925",
+    "source_image_url": "https://cdn.shopify.com/s/files/1/0473/1256/8485/files/O1CN01epxnpk1KUzkrxcOva__2904881168-0-cib.jpg?v=1786649033",
+    "product_url": "https://www.anpingbeauty.com/products/yc5295e_1",
+    "in_stock": "YES",
+    "width_mm": null,
+    "height_mm": null,
+    "dimension_status": "NEEDS_PHYSICAL_SIZE",
+    "image": "YC5295E_1.png",
+    "image_px": {
+      "width": 528,
+      "height": 877
+    },
+    "scale_correction": 1.0,
+    "anchor_type": "earlobe"
+  },
+  {
+    "sku": "YC9561E",
+    "name": "經典珍珠耳環",
+    "charm": "GRACE",
+    "material": "S925",
+    "source_image_url": "https://cdn.shopify.com/s/files/1/0473/1256/8485/files/O1CN01ixT8NM1KUzVLDHAUA__2904881168-0-cib.jpg?v=1780623853",
+    "product_url": "https://www.anpingbeauty.com/products/yc9561e",
+    "in_stock": "YES",
+    "width_mm": null,
+    "height_mm": null,
+    "dimension_status": "NEEDS_PHYSICAL_SIZE",
+    "image": "YC9561E.png",
+    "image_px": {
+      "width": 688,
+      "height": 270
+    },
+    "scale_correction": 1.0,
+    "anchor_type": "earlobe"
+  },
+  {
+    "sku": "C747",
+    "name": "不規則異形耳飾",
+    "charm": "VANGUARD",
+    "material": "S925",
+    "source_image_url": "https://cdn.shopify.com/s/files/1/0473/1256/8485/files/O1CN010CBOMu1K9SeQEBdud__3066791121-0-cib.jpg?v=1781792718",
+    "product_url": "https://www.anpingbeauty.com/products/c747",
+    "in_stock": "YES",
+    "width_mm": null,
+    "height_mm": null,
+    "dimension_status": "NEEDS_PHYSICAL_SIZE",
+    "image": "C747.png",
+    "image_px": {
+      "width": 950,
+      "height": 950
+    },
+    "scale_correction": 1.0,
+    "anchor_type": "earlobe"
+  },
+  {
+    "sku": "YC8320E_1",
+    "name": "珍珠蝴蝶耳環",
+    "charm": "MUSE",
+    "material": "S999",
+    "source_image_url": "https://cdn.shopify.com/s/files/1/0473/1256/8485/files/O1CN01e8Rpv71KUzjmIeSTZ__2904881168-0-cib.jpg?v=1775748477",
+    "product_url": "https://www.anpingbeauty.com/products/yc8320e_1",
+    "in_stock": "YES",
+    "width_mm": null,
+    "height_mm": null,
+    "dimension_status": "NEEDS_PHYSICAL_SIZE",
+    "image": "YC8320E_1.png",
+    "image_px": {
+      "width": 490,
+      "height": 157
+    },
+    "scale_correction": 1.0,
+    "anchor_type": "earlobe"
+  },
+  {
+    "sku": "EH-4520",
+    "name": "極簡五角星耳釘",
+    "charm": "HARMONY",
+    "material": "S925",
+    "source_image_url": "https://cdn.shopify.com/s/files/1/0473/1256/8485/files/O1CN018FTz8R1lq3ZyR2zDU__2200716164869-0-cib.jpg?v=1778811309",
+    "product_url": "https://www.anpingbeauty.com/products/eh-4520",
+    "in_stock": "YES",
+    "width_mm": null,
+    "height_mm": null,
+    "dimension_status": "NEEDS_PHYSICAL_SIZE",
+    "image": "EH-4520.png",
+    "image_px": {
+      "width": 648,
+      "height": 663
+    },
+    "scale_correction": 1.0,
+    "anchor_type": "earlobe"
+  }
+]
