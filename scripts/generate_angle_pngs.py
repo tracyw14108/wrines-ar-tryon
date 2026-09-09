@@ -22,7 +22,8 @@ def clean_source(path: Path) -> Image.Image:
     bbox = alpha.getbbox()
     if bbox:
         im = im.crop(bbox)
-    target = int(CANVAS * 0.74)
+    # Fill more of the AR texture canvas so the visible jewelry is not tiny.
+    target = int(CANVAS * 0.92)
     im.thumbnail((target, target), Image.Resampling.LANCZOS)
     out = Image.new('RGBA', (CANVAS, CANVAS), (0,0,0,0))
     out.alpha_composite(im, ((CANVAS-im.width)//2, (CANVAS-im.height)//2))
