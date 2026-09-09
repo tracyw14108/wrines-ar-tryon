@@ -84,7 +84,7 @@
     "scale_correction": 1.0,
     "anchor_type": "earlobe",
     "ear_outset": 0.12,
-    "ear_drop": 0.012,
+    "ear_drop": 0.14,
     "model_glb": "YC5295E_1.glb",
     "model_scale": 1.0,
     "mirror_pair": true,
