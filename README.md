@@ -1,4 +1,4 @@
-# W.RINES AR Try-On — Ear v4
+# W.RINES AR Try-On — Ear v6
 
 目前已包含：
 - 手機／電腦瀏覽器開啟前鏡頭
@@ -6,43 +6,45 @@
 - 多 SKU 正式安蘋耳環切換
 - 左耳／右耳／雙耳切換
 - 耳環大小與垂直位置微調
-- 耳垂近似定位與左右轉頭補償
 - 截圖／分享試戴畫面
 - 商品實際尺寸欄位 `width_mm / height_mm`
 - AR 商品 PNG 採 `rembg + OpenCV` 去背流程，只保留主要飾品主體
 
-## v4 掛戴真實感
+## v6 升級重點
 
-v4 不再把透明 PNG 的上緣直接貼在耳朵旁，而改為每款商品設定自己的穿耳／接觸 pivot：
+v6 已把原本的 2D 圖片貼耳模式改成 **Three.js 3D 試戴引擎**：
 
-- `product_type`：`stud` / `drop`
-- `pivot_x` / `pivot_y`：商品圖內的穿耳點
-- `wear_scale`：各款實戴比例修正
-- `contact_shadow`：耳垂接觸陰影
-- `sway`：垂墜耳環的微擺動強度
+- 耳環跟著臉部姿態旋轉，不再只是平面圖片平移。
+- 左右轉頭會同步改變 yaw / roll / pitch、遠近比例與透視寬度。
+- 支援真正的 `.glb` 商品模型。
+- `products.json` 若有 `model_glb`，會直接載入 `public/models/` 中的正式 GLB。
+- 尚未有 GLB 的 SKU，使用 3D proxy 暫代，不再把商品 PNG 當成試戴物件貼到臉上。
 
-同時加入：
-- 耳垂錨點平滑，降低鏡頭追蹤抖動
-- 左右轉頭時的遠近縮放
-- 遠側耳環水平透視壓縮
-- 垂墜耳環依頭部移動產生微幅慣性擺動
-- 接觸點淡陰影，降低「圖片浮在耳朵旁」的貼圖感
+## GLB 商品欄位
 
-## 商品圖 QA
+正式模型放在：
 
-已將 `C747` 從 AR 商品池移除，原因是目前來源圖為模特配戴情境圖，包含耳朵／側臉，不符合 AR 純商品圖標準。
+```text
+public/models/
+```
 
-目前 AR 只保留 6 款乾淨商品來源：
-- YC4413E_1
-- YC3536E_1
-- YC5295E_1
-- YC9561E
-- YC8320E_1
-- EH-4520
+商品資料可加入：
 
-同步腳本也會清除已從 catalog 排除的舊 PNG，避免污染圖再次留在前台。
+```json
+{
+  "model_glb": "YC3536E_1.glb",
+  "model_scale": 1.0
+}
+```
 
-最新 v4 商品同步驗證：6 款成功、0 款失敗。
+前台邏輯：
+
+- `model_glb` 有值 → `GLTFLoader` 載入真正 3D 模型。
+- `model_glb` 無值 → 使用 3D proxy 幾何模型。
+
+## 目前限制
+
+目前安蘋 GitHub 來源主要仍是商品照片，沒有廠商原始 3D 模型，因此現階段已完成的是 **GLB 架構與 3D tracking 引擎**；要讓每一款看起來完全等同實際商品，仍需為該 SKU 建立真正 GLB。
 
 ## 執行
 
@@ -51,21 +53,20 @@ npm install
 npm run dev
 ```
 
-正式測試網址：
+正式網址：
 
 ```text
 https://tracyw14108.github.io/wrines-ar-tryon/
 ```
 
-## 商品資料
+## 主要結構
 
 ```text
-public/products/
+src/main-v6.js
+public/models/
 public/products/products.json
-data/anpin-ar-products.json
-scripts/build_products.py
 ```
 
 ## 尺寸
 
-有可靠尺寸資料的 SKU 使用 `width_mm / height_mm` 進行接近實際比例的顯示；尺寸尚未核實的商品會標記 `NEEDS_PHYSICAL_SIZE`，不宣稱精準 1:1。
+有可靠尺寸資料的 SKU 使用 `width_mm / height_mm` 進行接近實際比例的顯示；尺寸尚未核實的商品仍標記 `NEEDS_PHYSICAL_SIZE`，不宣稱精準 1:1。
