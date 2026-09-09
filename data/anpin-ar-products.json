@@ -9,7 +9,13 @@
     "in_stock": "YES",
     "width_mm": null,
     "height_mm": null,
-    "dimension_status": "NEEDS_PHYSICAL_SIZE"
+    "dimension_status": "NEEDS_PHYSICAL_SIZE",
+    "product_type": "stud",
+    "pivot_x": 0.5,
+    "pivot_y": 0.5,
+    "wear_scale": 0.76,
+    "contact_shadow": 0.16,
+    "sway": 0.0
   },
   {
     "sku": "YC3536E_1",
@@ -22,7 +28,13 @@
     "width_mm": 4.25,
     "height_mm": 6.83,
     "dimension_status": "VERIFIED_FROM_ANPIN_PRODUCT_PAGE",
-    "dimension_evidence": "螺絲款 約6.83mm*4.25mm"
+    "dimension_evidence": "螺絲款 約6.83mm*4.25mm",
+    "product_type": "stud",
+    "pivot_x": 0.5,
+    "pivot_y": 0.5,
+    "wear_scale": 1.0,
+    "contact_shadow": 0.14,
+    "sway": 0.0
   },
   {
     "sku": "YC5295E_1",
@@ -35,7 +47,13 @@
     "width_mm": 8.61,
     "height_mm": 60.67,
     "dimension_status": "VERIFIED_FROM_ANPIN_PRODUCT_PAGE",
-    "dimension_evidence": "約60.67mm*8.61mm"
+    "dimension_evidence": "約60.67mm*8.61mm",
+    "product_type": "drop",
+    "pivot_x": 0.5,
+    "pivot_y": 0.025,
+    "wear_scale": 1.0,
+    "contact_shadow": 0.12,
+    "sway": 1.0
   },
   {
     "sku": "YC9561E",
@@ -47,19 +65,13 @@
     "in_stock": "YES",
     "width_mm": null,
     "height_mm": null,
-    "dimension_status": "NEEDS_PHYSICAL_SIZE"
-  },
-  {
-    "sku": "C747",
-    "name": "不規則異形耳飾",
-    "charm": "VANGUARD",
-    "material": "S925",
-    "source_image_url": "https://cdn.shopify.com/s/files/1/0473/1256/8485/files/O1CN010CBOMu1K9SeQEBdud__3066791121-0-cib.jpg?v=1781792718",
-    "product_url": "https://www.anpingbeauty.com/products/c747",
-    "in_stock": "YES",
-    "width_mm": null,
-    "height_mm": null,
-    "dimension_status": "NEEDS_PHYSICAL_SIZE"
+    "dimension_status": "NEEDS_PHYSICAL_SIZE",
+    "product_type": "stud",
+    "pivot_x": 0.5,
+    "pivot_y": 0.5,
+    "wear_scale": 0.72,
+    "contact_shadow": 0.14,
+    "sway": 0.0
   },
   {
     "sku": "YC8320E_1",
@@ -71,7 +83,13 @@
     "in_stock": "YES",
     "width_mm": null,
     "height_mm": null,
-    "dimension_status": "NEEDS_PHYSICAL_SIZE"
+    "dimension_status": "NEEDS_PHYSICAL_SIZE",
+    "product_type": "stud",
+    "pivot_x": 0.5,
+    "pivot_y": 0.52,
+    "wear_scale": 0.74,
+    "contact_shadow": 0.15,
+    "sway": 0.0
   },
   {
     "sku": "EH-4520",
@@ -83,6 +101,12 @@
     "in_stock": "YES",
     "width_mm": null,
     "height_mm": null,
-    "dimension_status": "NEEDS_PHYSICAL_SIZE"
+    "dimension_status": "NEEDS_PHYSICAL_SIZE",
+    "product_type": "stud",
+    "pivot_x": 0.5,
+    "pivot_y": 0.5,
+    "wear_scale": 0.68,
+    "contact_shadow": 0.13,
+    "sway": 0.0
   }
 ]
