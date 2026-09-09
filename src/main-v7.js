@@ -30,6 +30,7 @@ let currentProduct = null;
 let selectedSide = 'both';
 let angleImages = {};
 let toastTimer = null;
+let switchingProduct = false;
 const motion = { left: null, right: null };
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -81,7 +82,7 @@ function pickAngle(turn, side) {
 }
 function drawEarring(side, anchor, width, height, pose) {
   const key = pickAngle(pose.turn, side), img = angleImages[key] || angleImages.front;
-  if (!img?.complete) return;
+  if (!img?.complete || !img.naturalWidth) return;
   const facing = side === 'left' ? clamp(.55 + pose.turn * 1.35, 0, 1) : clamp(.55 - pose.turn * 1.35, 0, 1);
   if (facing < .08) return;
   const depth = side === 'left' ? clamp(1 - pose.turn * .10, .86, 1.1) : clamp(1 + pose.turn * .10, .86, 1.1);
@@ -105,21 +106,75 @@ function renderAR(lms) {
 }
 
 function imageUrl(product) { const v = product.image || ''; return /^(https?:|data:)/i.test(v) ? v : `${BASE}products/${v}`; }
+function angleAssetUrl(src) {
+  if (!src) return '';
+  if (/^(https?:|data:|blob:)/i.test(src)) return src;
+  const clean = String(src).replace(/^\.\//, '').replace(/^\//, '');
+  if (clean.startsWith('products/')) return `${BASE}${clean}`;
+  return `${BASE}products/${clean}`;
+}
 function renderStrip() {
   productStrip.innerHTML = '';
-  catalog.forEach((p, i) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'product-card'; b.innerHTML = `<img class="product-thumb" src="${imageUrl(p)}" alt="${p.name || p.sku}"><span class="product-sku">${p.sku}</span><span class="product-charm">${p.charm || ''}</span>`; b.onclick = () => selectProduct(i, true); productStrip.appendChild(b); });
+  catalog.forEach((p, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'product-card';
+    b.innerHTML = `<img class="product-thumb" src="${imageUrl(p)}" alt="${p.name || p.sku}"><span class="product-sku">${p.sku}</span><span class="product-charm">${p.charm || ''}</span>`;
+    b.addEventListener('click', () => selectProduct(i, true));
+    productStrip.appendChild(b);
+  });
 }
-async function loadImage(src) { return new Promise((resolve, reject) => { const img = new Image(); img.onload = () => resolve(img); img.onerror = reject; img.src = src; }); }
+async function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.decoding = 'async';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`圖片載入失敗：${src}`));
+    img.src = src;
+  });
+}
 async function selectProduct(i, user = false) {
-  if (!catalog[i]) return; currentProduct = catalog[i]; productNameEl.textContent = `${currentProduct.sku} · ${currentProduct.name || ''}`;
-  const sized = Number(currentProduct.width_mm) > 0 && Number(currentProduct.height_mm) > 0;
-  sizeStatusEl.textContent = `${sized ? `實尺寸 ${currentProduct.width_mm} × ${currentProduct.height_mm} mm` : '尺寸資料待核對'}｜多角度 PNG v7.2`;
-  const assets = currentProduct.angle_assets || {}; const pairs = await Promise.all(Object.entries(assets).map(async ([k, src]) => [k, await loadImage(src)])); angleImages = Object.fromEntries(pairs);
-  [...productStrip.children].forEach((c, n) => c.classList.toggle('active', n === i)); productStrip.children[i]?.scrollIntoView({ behavior: user ? 'smooth' : 'auto', inline: 'center', block: 'nearest' }); if (user) toast(`已切換 ${currentProduct.sku}`);
+  if (!catalog[i] || switchingProduct) return;
+  switchingProduct = true;
+  const nextProduct = catalog[i];
+  [...productStrip.children].forEach((c, n) => c.classList.toggle('active', n === i));
+  productStrip.children[i]?.scrollIntoView({ behavior: user ? 'smooth' : 'auto', inline: 'center', block: 'nearest' });
+  productNameEl.textContent = `${nextProduct.sku} · ${nextProduct.name || ''}`;
+  sizeStatusEl.textContent = '載入試戴圖中…';
+  if (user) toast(`切換 ${nextProduct.sku}…`);
+
+  try {
+    const assets = nextProduct.angle_assets || {};
+    const entries = Object.entries(assets);
+    if (!entries.length) throw new Error('此商品沒有多角度圖');
+    const pairs = await Promise.all(entries.map(async ([k, src]) => [k, await loadImage(angleAssetUrl(src))]));
+    currentProduct = nextProduct;
+    angleImages = Object.fromEntries(pairs);
+    motion.left = motion.right = null;
+    const sized = Number(currentProduct.width_mm) > 0 && Number(currentProduct.height_mm) > 0;
+    sizeStatusEl.textContent = `${sized ? `實尺寸 ${currentProduct.width_mm} × ${currentProduct.height_mm} mm` : '尺寸資料待核對'}｜多角度 PNG v7.2.1`;
+    if (user) toast(`已切換 ${currentProduct.sku}`);
+  } catch (e) {
+    console.error('Product switch failed', e);
+    sizeStatusEl.textContent = '商品圖載入失敗，請再試一次';
+    toast('切換失敗，已保留目前商品');
+    const currentIndex = catalog.findIndex(p => p.sku === currentProduct?.sku);
+    [...productStrip.children].forEach((c, n) => c.classList.toggle('active', n === currentIndex));
+  } finally {
+    switchingProduct = false;
+  }
 }
 async function loadCatalog() {
-  const r = await fetch(`${PRODUCTS_URL}?v=${Date.now()}`, { cache: 'no-store' }); catalog = await r.json(); renderStrip();
-  const q = new URLSearchParams(location.search).get('sku'), i = q ? catalog.findIndex(p => String(p.sku).toLowerCase() === q.toLowerCase()) : 0; await selectProduct(i >= 0 ? i : 0, false);
+  try {
+    const r = await fetch(`${PRODUCTS_URL}?v=${Date.now()}`, { cache: 'no-store' });
+    if (!r.ok) throw new Error(`商品資料 HTTP ${r.status}`);
+    catalog = await r.json();
+    renderStrip();
+    const q = new URLSearchParams(location.search).get('sku'), i = q ? catalog.findIndex(p => String(p.sku).toLowerCase() === q.toLowerCase()) : 0;
+    await selectProduct(i >= 0 ? i : 0, false);
+  } catch (e) {
+    console.error('Catalog load failed', e);
+    statusEl.textContent = '商品資料載入失敗';
+    toast('商品資料載入失敗');
+  }
 }
 
 async function initLandmarker() {
