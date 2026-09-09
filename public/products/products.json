@@ -17,12 +17,13 @@
     "contact_shadow": 0.16,
     "sway": 0.0,
     "image": "YC4413E_1.png",
-    "image_px": {
-      "width": 147,
-      "height": 141
-    },
+    "image_px": {"width": 147, "height": 141},
     "scale_correction": 1.0,
-    "anchor_type": "earlobe"
+    "anchor_type": "earlobe",
+    "model_glb": "YC4413E_1.glb",
+    "model_scale": 1.0,
+    "mirror_pair": true,
+    "model_status": "PROXY_GLB"
   },
   {
     "sku": "YC3536E_1",
@@ -43,12 +44,13 @@
     "contact_shadow": 0.14,
     "sway": 0.0,
     "image": "YC3536E_1.png",
-    "image_px": {
-      "width": 221,
-      "height": 168
-    },
+    "image_px": {"width": 221, "height": 168},
     "scale_correction": 1.0,
-    "anchor_type": "earlobe"
+    "anchor_type": "earlobe",
+    "model_glb": "YC3536E_1.glb",
+    "model_scale": 1.0,
+    "mirror_pair": true,
+    "model_status": "PROXY_GLB"
   },
   {
     "sku": "YC5295E_1",
@@ -69,12 +71,13 @@
     "contact_shadow": 0.12,
     "sway": 1.0,
     "image": "YC5295E_1.png",
-    "image_px": {
-      "width": 207,
-      "height": 877
-    },
+    "image_px": {"width": 207, "height": 877},
     "scale_correction": 1.0,
-    "anchor_type": "earlobe"
+    "anchor_type": "earlobe",
+    "model_glb": "YC5295E_1.glb",
+    "model_scale": 1.0,
+    "mirror_pair": true,
+    "model_status": "PROXY_GLB"
   },
   {
     "sku": "YC9561E",
@@ -94,12 +97,13 @@
     "contact_shadow": 0.14,
     "sway": 0.0,
     "image": "YC9561E.png",
-    "image_px": {
-      "width": 356,
-      "height": 285
-    },
+    "image_px": {"width": 356, "height": 285},
     "scale_correction": 1.0,
-    "anchor_type": "earlobe"
+    "anchor_type": "earlobe",
+    "model_glb": "YC9561E.glb",
+    "model_scale": 1.0,
+    "mirror_pair": true,
+    "model_status": "PROXY_GLB"
   },
   {
     "sku": "YC8320E_1",
@@ -119,12 +123,13 @@
     "contact_shadow": 0.15,
     "sway": 0.0,
     "image": "YC8320E_1.png",
-    "image_px": {
-      "width": 205,
-      "height": 161
-    },
+    "image_px": {"width": 205, "height": 161},
     "scale_correction": 1.0,
-    "anchor_type": "earlobe"
+    "anchor_type": "earlobe",
+    "model_glb": "YC8320E_1.glb",
+    "model_scale": 1.0,
+    "mirror_pair": true,
+    "model_status": "PROXY_GLB"
   },
   {
     "sku": "EH-4520",
@@ -144,11 +149,12 @@
     "contact_shadow": 0.13,
     "sway": 0.0,
     "image": "EH-4520.png",
-    "image_px": {
-      "width": 232,
-      "height": 160
-    },
+    "image_px": {"width": 232, "height": 160},
     "scale_correction": 1.0,
-    "anchor_type": "earlobe"
+    "anchor_type": "earlobe",
+    "model_glb": "EH-4520.glb",
+    "model_scale": 1.0,
+    "mirror_pair": true,
+    "model_status": "PROXY_GLB"
   }
 ]
