@@ -114,14 +114,26 @@ def subject_only_png(raw: bytes, output: Path):
     img = Image.fromarray(rgba, 'RGBA')
     img = crop_to_alpha(img)
 
+    if img.getchannel('A').getbbox() is None:
+        raise ValueError('NO_VISIBLE_SUBJECT_AFTER_BACKGROUND_REMOVAL')
+
     img.save(output, 'PNG', optimize=True)
     return img.size
 
 
 def main():
     source_catalog = json.loads(SOURCE.read_text(encoding='utf-8'))
+    source_catalog = [item for item in source_catalog if item.get('ar_enabled', True) is not False]
     output_catalog = []
     failures = []
+
+    expected_files = {f"{item['sku']}.png" for item in source_catalog}
+
+    # 移除已從 AR catalog 排除的舊 PNG，避免模特圖或污染圖繼續留在前台。
+    for existing in OUT_DIR.glob('*.png'):
+        if existing.name not in expected_files and existing.name != 'wrines-earring.png':
+            existing.unlink()
+            print(f'REMOVED stale asset: {existing.name}')
 
     for item in source_catalog:
         sku = item['sku']
@@ -136,6 +148,12 @@ def main():
                 'image_px': {'width': size[0], 'height': size[1]},
                 'scale_correction': item.get('scale_correction', 1.0),
                 'anchor_type': item.get('anchor_type', 'earlobe'),
+                'product_type': item.get('product_type', 'stud'),
+                'pivot_x': item.get('pivot_x', 0.5),
+                'pivot_y': item.get('pivot_y', 0.5),
+                'wear_scale': item.get('wear_scale', 1.0),
+                'contact_shadow': item.get('contact_shadow', 0.14),
+                'sway': item.get('sway', 0.0),
             })
             print(f'OK {sku}: {size[0]}x{size[1]}')
         except Exception as exc:
