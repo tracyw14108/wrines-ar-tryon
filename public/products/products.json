@@ -10,16 +10,19 @@
     "width_mm": null,
     "height_mm": null,
     "dimension_status": "NEEDS_PHYSICAL_SIZE",
-    "image": "YC4413E_1.png",
-    "image_px": {"width":147,"height":141},
-    "scale_correction": 1.0,
-    "anchor_type": "earlobe",
     "product_type": "stud",
     "pivot_x": 0.5,
     "pivot_y": 0.5,
     "wear_scale": 0.76,
     "contact_shadow": 0.16,
-    "sway": 0.0
+    "sway": 0.0,
+    "image": "YC4413E_1.png",
+    "image_px": {
+      "width": 147,
+      "height": 141
+    },
+    "scale_correction": 1.0,
+    "anchor_type": "earlobe"
   },
   {
     "sku": "YC3536E_1",
@@ -33,16 +36,19 @@
     "height_mm": 6.83,
     "dimension_status": "VERIFIED_FROM_ANPIN_PRODUCT_PAGE",
     "dimension_evidence": "螺絲款 約6.83mm*4.25mm",
-    "image": "YC3536E_1.png",
-    "image_px": {"width":221,"height":168},
-    "scale_correction": 1.0,
-    "anchor_type": "earlobe",
     "product_type": "stud",
     "pivot_x": 0.5,
     "pivot_y": 0.5,
     "wear_scale": 1.0,
     "contact_shadow": 0.14,
-    "sway": 0.0
+    "sway": 0.0,
+    "image": "YC3536E_1.png",
+    "image_px": {
+      "width": 221,
+      "height": 168
+    },
+    "scale_correction": 1.0,
+    "anchor_type": "earlobe"
   },
   {
     "sku": "YC5295E_1",
@@ -56,16 +62,19 @@
     "height_mm": 60.67,
     "dimension_status": "VERIFIED_FROM_ANPIN_PRODUCT_PAGE",
     "dimension_evidence": "約60.67mm*8.61mm",
-    "image": "YC5295E_1.png",
-    "image_px": {"width":207,"height":877},
-    "scale_correction": 1.0,
-    "anchor_type": "earlobe",
     "product_type": "drop",
     "pivot_x": 0.5,
     "pivot_y": 0.025,
     "wear_scale": 1.0,
     "contact_shadow": 0.12,
-    "sway": 1.0
+    "sway": 1.0,
+    "image": "YC5295E_1.png",
+    "image_px": {
+      "width": 207,
+      "height": 877
+    },
+    "scale_correction": 1.0,
+    "anchor_type": "earlobe"
   },
   {
     "sku": "YC9561E",
@@ -78,16 +87,19 @@
     "width_mm": null,
     "height_mm": null,
     "dimension_status": "NEEDS_PHYSICAL_SIZE",
-    "image": "YC9561E.png",
-    "image_px": {"width":356,"height":285},
-    "scale_correction": 1.0,
-    "anchor_type": "earlobe",
     "product_type": "stud",
     "pivot_x": 0.5,
     "pivot_y": 0.5,
     "wear_scale": 0.72,
     "contact_shadow": 0.14,
-    "sway": 0.0
+    "sway": 0.0,
+    "image": "YC9561E.png",
+    "image_px": {
+      "width": 356,
+      "height": 285
+    },
+    "scale_correction": 1.0,
+    "anchor_type": "earlobe"
   },
   {
     "sku": "YC8320E_1",
@@ -100,16 +112,19 @@
     "width_mm": null,
     "height_mm": null,
     "dimension_status": "NEEDS_PHYSICAL_SIZE",
-    "image": "YC8320E_1.png",
-    "image_px": {"width":205,"height":161},
-    "scale_correction": 1.0,
-    "anchor_type": "earlobe",
     "product_type": "stud",
     "pivot_x": 0.5,
     "pivot_y": 0.52,
     "wear_scale": 0.74,
     "contact_shadow": 0.15,
-    "sway": 0.0
+    "sway": 0.0,
+    "image": "YC8320E_1.png",
+    "image_px": {
+      "width": 205,
+      "height": 161
+    },
+    "scale_correction": 1.0,
+    "anchor_type": "earlobe"
   },
   {
     "sku": "EH-4520",
@@ -122,15 +137,18 @@
     "width_mm": null,
     "height_mm": null,
     "dimension_status": "NEEDS_PHYSICAL_SIZE",
-    "image": "EH-4520.png",
-    "image_px": {"width":232,"height":160},
-    "scale_correction": 1.0,
-    "anchor_type": "earlobe",
     "product_type": "stud",
     "pivot_x": 0.5,
     "pivot_y": 0.5,
     "wear_scale": 0.68,
     "contact_shadow": 0.13,
-    "sway": 0.0
+    "sway": 0.0,
+    "image": "EH-4520.png",
+    "image_px": {
+      "width": 232,
+      "height": 160
+    },
+    "scale_correction": 1.0,
+    "anchor_type": "earlobe"
   }
 ]
