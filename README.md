@@ -1,94 +1,140 @@
-# W.RINES AR Try-On — Ear v6
+# W.RINES AR Try-On — Ear v7.2 PNG Angles
 
-目前已包含：
+目前正式版本使用 **MediaPipe Face Landmarker + 透明 PNG 多角度商品圖**。
+
+## 正式網址
+
+```text
+https://tracyw14108.github.io/wrines-ar-tryon/
+```
+
+## v7.2 已完成
+
 - 手機／電腦瀏覽器開啟前鏡頭
 - MediaPipe Face Landmarker 單臉偵測
-- 多 SKU 正式安蘋耳環切換
+- 6 款安蘋正式 SKU 切換
 - 左耳／右耳／雙耳切換
-- 耳環大小與垂直位置微調
+- 耳環大小微調
+- 垂直位置微調
 - 截圖／分享試戴畫面
 - 商品實際尺寸欄位 `width_mm / height_mm`
-- AR 商品 PNG 採 `rembg + OpenCV` 去背流程，只保留主要飾品主體
+- 耳垂近似 anchor + 左右轉頭 tracking
+- 依頭部左右轉動切換 5 個商品角度：
+  - `front`
+  - `left45`
+  - `left90`
+  - `right45`
+  - `right90`
 
-## v6 升級重點
+## 目前 6 款 SKU
 
-v6 已把原本的 2D 圖片貼耳模式改成 **Three.js 3D 試戴引擎**：
+- `YC4413E_1`｜方形珍珠幾何耳環
+- `YC3536E_1`｜蝴蝶結螺絲耳環
+- `YC5295E_1`｜線性流蘇耳釘
+- `YC9561E`｜經典珍珠耳環
+- `YC8320E_1`｜珍珠蝴蝶耳環
+- `EH-4520`｜極簡五角星耳釘
 
-- 耳環跟著臉部姿態旋轉，不再只是平面圖片平移。
-- 左右轉頭會同步改變 yaw / roll / pitch、遠近比例與透視寬度。
-- 支援真正的 `.glb` 商品模型。
-- `products.json` 若有 `model_glb`，會直接載入 `public/models/` 中的 GLB。
-- 尚未有正式商品建模資料時，先使用幾何 proxy GLB，避免再把 2D 商品 PNG 貼到臉上。
+## 多角度商品圖來源
 
-## 批次 GLB 導入
+正式 build 不再使用泛用幾何圖形冒充商品外觀。
 
-已建立自動化：
-
-```text
-scripts/generate_glb_proxies.py
-.github/workflows/generate-glb.yml
-```
-
-目前已批次產出 6 個 GLB：
-
-- `YC4413E_1.glb`
-- `YC3536E_1.glb`
-- `YC5295E_1.glb`
-- `YC9561E.glb`
-- `YC8320E_1.glb`
-- `EH-4520.glb`
-
-`public/products/products.json` 已全部加入 `model_glb`、`model_scale` 與 `model_status`。
-
-## GLB 商品欄位
-
-正式模型放在：
+`.github/workflows/deploy-pages.yml` 會先執行：
 
 ```text
-public/models/
+scripts/generate_angle_pngs.py
 ```
 
-商品資料：
+此腳本直接讀取：
+
+```text
+public/products/SKU.png
+```
+
+也就是每款已確認的透明商品主圖，再衍生出 45° / 90° 的透視版本，因此 **front 與各角度都維持同一款商品外觀**。
+
+輸出到：
+
+```text
+public/products/angles/SKU_front.png
+public/products/angles/SKU_left45.png
+public/products/angles/SKU_left90.png
+public/products/angles/SKU_right45.png
+public/products/angles/SKU_right90.png
+```
+
+目前共：
+
+```text
+6 SKU × 5 angles = 30 PNG
+```
+
+## 商品資料格式
+
+`public/products/products.json`
 
 ```json
 {
-  "model_glb": "YC3536E_1.glb",
-  "model_scale": 1.0,
-  "model_status": "PROXY_GLB"
+  "sku": "YC3536E_1",
+  "render_mode": "angles",
+  "angle_assets": {
+    "front": "angles/YC3536E_1_front.png",
+    "left45": "angles/YC3536E_1_left45.png",
+    "left90": "angles/YC3536E_1_left90.png",
+    "right45": "angles/YC3536E_1_right45.png",
+    "right90": "angles/YC3536E_1_right90.png"
+  }
 }
 ```
 
-前台邏輯：
+## CI / Pages QA
 
-- `model_glb` 有值 → `GLTFLoader` 載入 3D GLB。
-- 日後取得正式精細建模 GLB 時，可直接用同 SKU 檔名覆蓋 proxy GLB，不需重寫 AR tracking 引擎。
+Pages workflow 在部署前會自動檢查：
 
-## 目前限制
+- `src/main-v7.js` JavaScript syntax
+- `products.json` 必須正好有 6 SKU
+- 每款必須有 5 angle assets
+- 30 張圖片都必須存在
+- 每張圖必須為 `RGBA`
+- 每張圖必須有透明背景
+- `npm install`
+- `npm run build`
+- `dist/index.html`
+- `dist/products/products.json`
+- `dist/products/angles/` 30 張 PNG
 
-目前安蘋 GitHub 來源主要仍是商品照片，沒有廠商原始 3D 模型。因此這 6 個檔案是依商品類型建立的 **3D proxy GLB**，目的先解決平面貼圖與轉頭無立體角度的問題；它們不是對真實商品逐毫米還原的建模檔。要做到商品外觀完全一致，仍需要正式 3D 建模或多角度掃描素材。
+所有檢查通過後才會部署 GitHub Pages。
 
-## 執行
+## 尺寸資料
+
+目前有可靠安蘋商品頁尺寸的 SKU：
+
+- `YC3536E_1`：6.83 × 4.25 mm
+- `YC5295E_1`：8.61 × 60.67 mm
+
+其他商品仍標記 `NEEDS_PHYSICAL_SIZE`，目前只做比例預覽，不宣稱精準 1:1。
+
+## 重要限制
+
+目前 45° / 90° 是以正式透明商品主圖做的 **2D 透視衍生圖**，因此可以維持商品一致性並改善平面貼圖感，但並不是廠商真正拍攝的側面照片，也不是完整 3D 重建。
+
+若未來取得真正多角度商品攝影或正式 GLB，可直接替換對應 angle assets / model，不需要重寫臉部 tracking 架構。
+
+## 本機執行
 
 ```bash
 npm install
 npm run dev
 ```
 
-正式網址：
+## 主要檔案
 
 ```text
-https://tracyw14108.github.io/wrines-ar-tryon/
-```
-
-## 主要結構
-
-```text
-src/main-v6.js
-public/models/
+index.html
+src/main-v7.js
+src/style.css
 public/products/products.json
-scripts/generate_glb_proxies.py
+public/products/*.png
+scripts/generate_angle_pngs.py
+.github/workflows/deploy-pages.yml
 ```
-
-## 尺寸
-
-有可靠尺寸資料的 SKU 使用 `width_mm / height_mm` 進行接近實際比例的顯示；尺寸尚未核實的商品仍標記 `NEEDS_PHYSICAL_SIZE`，不宣稱精準 1:1。
