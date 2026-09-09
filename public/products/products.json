@@ -21,7 +21,16 @@
     "model_glb": "YC4413E_1.glb",
     "model_scale": 1.0,
     "mirror_pair": true,
-    "model_status": "PROXY_GLB"
+    "model_status": "PROXY_GLB",
+    "render_mode": "angles",
+    "fallback_mode": "proxy3d",
+    "angle_assets": {
+      "front": "angles/YC4413E_1_front.png",
+      "left45": "angles/YC4413E_1_left45.png",
+      "left90": "angles/YC4413E_1_left90.png",
+      "right45": "angles/YC4413E_1_right45.png",
+      "right90": "angles/YC4413E_1_right90.png"
+    }
   },
   {
     "sku": "YC3536E_1",
@@ -46,7 +55,16 @@
     "model_glb": "YC3536E_1.glb",
     "model_scale": 1.08,
     "mirror_pair": true,
-    "model_status": "PROXY_GLB"
+    "model_status": "PROXY_GLB",
+    "render_mode": "angles",
+    "fallback_mode": "proxy3d",
+    "angle_assets": {
+      "front": "angles/YC3536E_1_front.png",
+      "left45": "angles/YC3536E_1_left45.png",
+      "left90": "angles/YC3536E_1_left90.png",
+      "right45": "angles/YC3536E_1_right45.png",
+      "right90": "angles/YC3536E_1_right90.png"
+    }
   },
   {
     "sku": "YC5295E_1",
@@ -70,7 +88,16 @@
     "model_glb": "YC5295E_1.glb",
     "model_scale": 1.0,
     "mirror_pair": true,
-    "model_status": "PROXY_GLB"
+    "model_status": "PROXY_GLB",
+    "render_mode": "angles",
+    "fallback_mode": "proxy3d",
+    "angle_assets": {
+      "front": "angles/YC5295E_1_front.png",
+      "left45": "angles/YC5295E_1_left45.png",
+      "left90": "angles/YC5295E_1_left90.png",
+      "right45": "angles/YC5295E_1_right45.png",
+      "right90": "angles/YC5295E_1_right90.png"
+    }
   },
   {
     "sku": "YC9561E",
@@ -94,7 +121,16 @@
     "model_glb": "YC9561E.glb",
     "model_scale": 1.0,
     "mirror_pair": true,
-    "model_status": "PROXY_GLB"
+    "model_status": "PROXY_GLB",
+    "render_mode": "angles",
+    "fallback_mode": "proxy3d",
+    "angle_assets": {
+      "front": "angles/YC9561E_front.png",
+      "left45": "angles/YC9561E_left45.png",
+      "left90": "angles/YC9561E_left90.png",
+      "right45": "angles/YC9561E_right45.png",
+      "right90": "angles/YC9561E_right90.png"
+    }
   },
   {
     "sku": "YC8320E_1",
@@ -108,7 +144,7 @@
     "height_mm": null,
     "dimension_status": "NEEDS_PHYSICAL_SIZE",
     "product_type": "stud",
-    "wear_scale": 0.80,
+    "wear_scale": 0.8,
     "image": "YC8320E_1.png",
     "scale_correction": 1.0,
     "anchor_type": "earlobe",
@@ -118,7 +154,16 @@
     "model_glb": "YC8320E_1.glb",
     "model_scale": 1.0,
     "mirror_pair": true,
-    "model_status": "PROXY_GLB"
+    "model_status": "PROXY_GLB",
+    "render_mode": "angles",
+    "fallback_mode": "proxy3d",
+    "angle_assets": {
+      "front": "angles/YC8320E_1_front.png",
+      "left45": "angles/YC8320E_1_left45.png",
+      "left90": "angles/YC8320E_1_left90.png",
+      "right45": "angles/YC8320E_1_right45.png",
+      "right90": "angles/YC8320E_1_right90.png"
+    }
   },
   {
     "sku": "EH-4520",
@@ -142,6 +187,15 @@
     "model_glb": "EH-4520.glb",
     "model_scale": 1.0,
     "mirror_pair": true,
-    "model_status": "PROXY_GLB"
+    "model_status": "PROXY_GLB",
+    "render_mode": "angles",
+    "fallback_mode": "proxy3d",
+    "angle_assets": {
+      "front": "angles/EH-4520_front.png",
+      "left45": "angles/EH-4520_left45.png",
+      "left90": "angles/EH-4520_left90.png",
+      "right45": "angles/EH-4520_right45.png",
+      "right90": "angles/EH-4520_right90.png"
+    }
   }
 ]
