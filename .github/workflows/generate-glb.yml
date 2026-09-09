@@ -1,0 +1,46 @@
+name: Generate AR GLB Models
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/generate_glb_proxies.py'
+      - '.github/workflows/generate-glb.yml'
+      - 'public/products/products.json'
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install GLB dependencies
+        run: pip install trimesh numpy
+
+      - name: Generate batch GLB models
+        run: python scripts/generate_glb_proxies.py
+
+      - name: Commit GLB assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/models/*.glb
+          if git diff --cached --quiet; then
+            echo "No GLB changes."
+          else
+            git commit -m "Generate batch AR GLB models"
+            git pull --rebase origin main
+            git push origin main
+          fi
