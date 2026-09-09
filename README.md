@@ -17,8 +17,28 @@ v6 已把原本的 2D 圖片貼耳模式改成 **Three.js 3D 試戴引擎**：
 - 耳環跟著臉部姿態旋轉，不再只是平面圖片平移。
 - 左右轉頭會同步改變 yaw / roll / pitch、遠近比例與透視寬度。
 - 支援真正的 `.glb` 商品模型。
-- `products.json` 若有 `model_glb`，會直接載入 `public/models/` 中的正式 GLB。
-- 尚未有 GLB 的 SKU，使用 3D proxy 暫代，不再把商品 PNG 當成試戴物件貼到臉上。
+- `products.json` 若有 `model_glb`，會直接載入 `public/models/` 中的 GLB。
+- 尚未有正式商品建模資料時，先使用幾何 proxy GLB，避免再把 2D 商品 PNG 貼到臉上。
+
+## 批次 GLB 導入
+
+已建立自動化：
+
+```text
+scripts/generate_glb_proxies.py
+.github/workflows/generate-glb.yml
+```
+
+目前已批次產出 6 個 GLB：
+
+- `YC4413E_1.glb`
+- `YC3536E_1.glb`
+- `YC5295E_1.glb`
+- `YC9561E.glb`
+- `YC8320E_1.glb`
+- `EH-4520.glb`
+
+`public/products/products.json` 已全部加入 `model_glb`、`model_scale` 與 `model_status`。
 
 ## GLB 商品欄位
 
@@ -28,23 +48,24 @@ v6 已把原本的 2D 圖片貼耳模式改成 **Three.js 3D 試戴引擎**：
 public/models/
 ```
 
-商品資料可加入：
+商品資料：
 
 ```json
 {
   "model_glb": "YC3536E_1.glb",
-  "model_scale": 1.0
+  "model_scale": 1.0,
+  "model_status": "PROXY_GLB"
 }
 ```
 
 前台邏輯：
 
-- `model_glb` 有值 → `GLTFLoader` 載入真正 3D 模型。
-- `model_glb` 無值 → 使用 3D proxy 幾何模型。
+- `model_glb` 有值 → `GLTFLoader` 載入 3D GLB。
+- 日後取得正式精細建模 GLB 時，可直接用同 SKU 檔名覆蓋 proxy GLB，不需重寫 AR tracking 引擎。
 
 ## 目前限制
 
-目前安蘋 GitHub 來源主要仍是商品照片，沒有廠商原始 3D 模型，因此現階段已完成的是 **GLB 架構與 3D tracking 引擎**；要讓每一款看起來完全等同實際商品，仍需為該 SKU 建立真正 GLB。
+目前安蘋 GitHub 來源主要仍是商品照片，沒有廠商原始 3D 模型。因此這 6 個檔案是依商品類型建立的 **3D proxy GLB**，目的先解決平面貼圖與轉頭無立體角度的問題；它們不是對真實商品逐毫米還原的建模檔。要做到商品外觀完全一致，仍需要正式 3D 建模或多角度掃描素材。
 
 ## 執行
 
@@ -65,6 +86,7 @@ https://tracyw14108.github.io/wrines-ar-tryon/
 src/main-v6.js
 public/models/
 public/products/products.json
+scripts/generate_glb_proxies.py
 ```
 
 ## 尺寸
