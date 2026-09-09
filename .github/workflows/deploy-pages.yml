@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -20,6 +20,50 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Unpack W.RINES AR v7.2 package
+        shell: bash
+        run: |
+          rm -rf .v7-package
+          mkdir -p .v7-package
+          unzip -o v7-deploy.zip -d .v7-package
+          cp -a .v7-package/. ./
+          rm -rf .v7-package
+
+      - name: Validate v7.2 source
+        shell: bash
+        run: |
+          node --check src/main-v7.js
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('public/products/products.json')
+          items = json.loads(p.read_text())
+          assert len(items) == 6, f'expected 6 products, got {len(items)}'
+          required = {'front','left45','left90','right45','right90'}
+          for item in items:
+              assert item.get('render_mode') == 'angles', item.get('sku')
+              assets = item.get('angle_assets', {})
+              assert required.issubset(assets), (item.get('sku'), assets.keys())
+              for key in required:
+                  v = assets[key]
+                  if not str(v).startswith(('data:image/png;base64,','http://','https://')):
+                      assert (Path('public/products') / v).exists(), (item.get('sku'), key, v)
+          print('Validated 6 SKUs x 5 angles')
+          PY
+
+      - name: Sync unpacked v7.2 files to main
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html package.json vite.config.js README.md src/main-v7.js src/style.css public/products/products.json public/products/angles
+          if ! git diff --cached --quiet; then
+            git commit -m "Deploy W.RINES AR v7.2 PNG multi-angle try-on [skip ci]"
+            git push origin HEAD:main
+          else
+            echo "Repository already matches v7.2 package"
+          fi
 
       - name: Setup Node
         uses: actions/setup-node@v4
